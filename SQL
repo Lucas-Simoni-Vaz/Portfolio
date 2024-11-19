@@ -1,4 +1,5 @@
 -- Código desenvolvido com o objetivo de realizar o tratamento de dados no SQL Server em vez de utilizá-lo no Power BI, visando ganhos operacionais.
+-- RESULTADO: https://ibb.co/w4rrxwb
 
 SELECT 
     Data,
