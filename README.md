@@ -1,2 +1,0 @@
-# Portfolio
- Código SQL ETL
