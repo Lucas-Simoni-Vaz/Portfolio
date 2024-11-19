@@ -1,0 +1,46 @@
+-- Código desenvolvido com o objetivo de realizar o tratamento de dados no SQL Server em vez de utilizá-lo no Power BI, visando ganhos operacionais.
+
+SELECT 
+    Data,
+    Partida,
+    Time,
+    Mando,
+	Resultado,
+    Gols,
+    Oficial,
+    UF_Oficial,
+    Funcao_Oficial
+FROM (
+    SELECT 
+        Data,
+        Partida,
+        LEFT(Partida, CHARINDEX('-', Partida) - 1) AS Mandante,
+        TRIM(RIGHT(Partida, LEN(Partida) - CHARINDEX('X', Partida))) AS Visitante,
+		Resultado,
+		LEFT(Resultado, CHARINDEX(' X ', Resultado) - 1) AS Gols_Mandante,
+		TRIM(RIGHT(Resultado, LEN(Resultado) - CHARINDEX('X', Resultado))) AS Gols_Visitante,
+        v.Oficial,
+        v.UF_Oficial,
+        v.Funcao_Oficial
+    FROM HistoricoEscalacao
+    CROSS APPLY (
+        VALUES
+            (Arbitro, UF_Arbitro, 'Árbitro'),
+            (Assistente_1, UF_Assistente_1, 'Assistente 1'),
+            (Assistente_2, UF_Assistente_2, 'Assistente 2'),
+            (Quarto_Arbitro, UF_Quarto_Arbitro, 'Quarto Árbitro'),
+            (Delegado, UF_Delegado, 'Delegado'),
+            (VAR, UF_VAR, 'VAR')
+    ) v (Oficial, UF_Oficial, Funcao_Oficial)
+    WHERE v.Oficial IS NOT NULL
+) src
+UNPIVOT (
+    Time FOR Mando IN (Mandante, Visitante)
+) upvt
+OUTER APPLY (
+    SELECT 
+        CASE 
+            WHEN Mando = 'Mandante' THEN Gols_Mandante 
+            ELSE Gols_Visitante 
+        END AS Gols
+) AS g;
